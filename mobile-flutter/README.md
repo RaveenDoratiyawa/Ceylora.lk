@@ -1,0 +1,43 @@
+# Mobile App — Flutter
+
+The tourist-facing (and guide/vehicle-owner-facing) mobile app: browse destinations/hotels/packages, book a trip or ask the AI to plan a custom one, chat with your guide, pay, and review your trip afterwards. Guides and Vehicle Owners use the same app to manage their availability and assigned trips.
+
+## Prerequisites
+
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (stable channel)
+- The backend API running (see [`../backend/README.md`](../backend/README.md))
+
+## Setup
+
+```
+cd mobile-flutter
+flutter pub get
+flutter run
+```
+
+The app talks to the backend via `ApiService` (`lib/services/api_service.dart`), which defaults to `http://localhost:5220`. On a physical device or emulator, this needs to be your machine's LAN IP instead of `localhost` — update `ApiService.baseUrl` accordingly.
+
+## Running the tests
+
+```
+flutter test
+```
+
+Uses `flutter_test` + `provider` for widget/provider tests:
+- `test/unit/` — pure functions (`resolveImageUrl`, form validators)
+- `test/providers/` — `AuthProvider` state (session persistence via `shared_preferences`, logout, local profile updates)
+- `test/screens/` — widget tests, including `VehicleEditScreen`'s **read-only Type/PricePerKm after creation** business rule
+- `test/widget_test.dart` — the default Flutter smoke test
+
+`login()`/`register()`/`refreshVerificationStatus()` on `AuthProvider` call the real `ApiService` singleton (no dependency-injection seam), so they're deliberately **not** unit-tested rather than mocked at the cost of changing production code — see [ADR 0004](../docs/adr/0004-core-coverage-testing-strategy.md).
+
+## Project layout
+
+```
+lib/
+├── screens/     # one file/folder per screen
+├── widgets/     # shared widgets (ui/, scenic/, registration_widgets.dart)
+├── providers/   # Provider state (AuthProvider, ...)
+├── services/    # ApiService — HTTP client to the backend
+└── theme/       # app-wide styling
+```

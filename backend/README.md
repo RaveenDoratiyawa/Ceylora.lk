@@ -1,0 +1,51 @@
+# Backend — ASP.NET Core API (`CeyloraAPI`)
+
+The REST API behind CEYLORA: auth (JWT), bookings, packages, hotels, vehicles, guides, reviews, notifications, chat, and the Agent Workflow bridge to the Python AI service. Built on **ASP.NET Core 8** with **EF Core** (Npgsql → PostgreSQL).
+
+## Prerequisites
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- A PostgreSQL database (e.g. a free [Supabase](https://supabase.com) project)
+
+## Setup
+
+1. Copy the connection string, JWT signing key and any third-party keys (OpenWeather, OpenRouteService, Gmail SMTP app password) into `backend/CeyloraAPI/appsettings.Development.json` (this file is git-ignored — **never commit real secrets**). At minimum it needs:
+   ```json
+   {
+     "ConnectionStrings": { "DefaultConnection": "Host=...;Database=...;Username=...;Password=..." },
+     "Jwt": { "Key": "<a long random string>", "Issuer": "CeyloraAPI", "Audience": "CeyloraClient" }
+   }
+   ```
+2. Apply migrations:
+   ```
+   cd backend/CeyloraAPI
+   dotnet ef database update
+   ```
+3. Run the API:
+   ```
+   dotnet run
+   ```
+   Swagger UI opens at `http://localhost:5220/swagger` (the port is set in `Properties/launchSettings.json`).
+
+## Running the tests
+
+```
+cd backend/CeyloraAPI.Tests
+dotnet test
+```
+
+The test suite (`CeyloraAPI.Tests/`) uses EF Core's **InMemory** provider (a fresh database per test — no real Postgres needed to run tests) and Moq for `IEmailService`/`INotificationService`/`IWebHostEnvironment`. Covers: pricing/discount rules, JWT claim generation, auth (register/login, role rejection), and vehicle controller authorization + the "can't re-enable a vehicle mid-trip" business rule. See [ADR 0004](../docs/adr/0004-core-coverage-testing-strategy.md) for the testing strategy applied across every stack.
+
+## Project layout
+
+```
+CeyloraAPI/
+├── Controllers/     # one controller per resource (Auth, Bookings, Vehicles, ...)
+├── Models/          # EF Core entities — see docs/er-diagram.md
+├── DTOs/            # request/response shapes
+├── Services/        # business logic (pricing, JWT, email, notifications)
+├── Repositories/    # data-access abstractions
+├── Data/            # AppDbContext
+├── Migrations/       # EF Core migrations
+└── Agents/          # AgentWorkflowController's supporting types
+```

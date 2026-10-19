@@ -1,0 +1,6 @@
+# Documentation
+
+- [`adr/`](adr/) — Architecture Decision Records: why the major technical choices were made.
+- [`er-diagram.md`](er-diagram.md) — database entity-relationship diagram (Mermaid).
+
+See the root [`README.md`](../README.md) for the project overview, architecture diagram, and per-stack setup instructions.
